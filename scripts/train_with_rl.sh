@@ -37,7 +37,10 @@ echo -e "${BLUE}================================================${NC}"
 # Load environment variables
 if [ -f .env ]; then
     echo -e "${GREEN}✓ Loading .env file${NC}"
-    export $(cat .env | grep -v '^#' | xargs)
+    # Properly load .env file, handling comments and empty lines
+    set -a
+    source <(cat .env | grep -v '^\s*#' | grep -v '^\s*$' | sed 's/#.*//')
+    set +a
 else
     echo -e "${RED}✗ .env file not found${NC}"
     echo "Please create a .env file from env.example:"
