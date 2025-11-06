@@ -320,7 +320,7 @@ async def rollout(
         
         # Make the API call with robust error logging
         try:
-        llm_response = await acompletion(**completion_kwargs)  # type: ignore
+            llm_response = await acompletion(**completion_kwargs)  # type: ignore
         except Exception as e:
             # Attach detailed context for debugging
             safe_kwargs = {
