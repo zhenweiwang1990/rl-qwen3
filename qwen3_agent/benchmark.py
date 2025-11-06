@@ -40,11 +40,11 @@ async def benchmark_model(
             if verbose:
                 print(f"Completed {i}/{limit}")
     else:
-    val_trajectories = await gather_trajectories(
-        (rollout(model, scenario) for scenario in val_scenarios),
-        pbar_desc=f"validation {model.name}",
-        max_exceptions=limit if swallow_exceptions else 0,
-    )
+        val_trajectories = await gather_trajectories(
+            (rollout(model, scenario) for scenario in val_scenarios),
+            pbar_desc=f"validation {model.name}",
+            max_exceptions=limit if swallow_exceptions else 0,
+        )
 
     valid_trajectories = [t for t in val_trajectories if isinstance(t, Trajectory)]
 
