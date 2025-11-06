@@ -1,7 +1,6 @@
-# Core ART library for RL training
-# Install from local source (parent directory)
-# Use: pip install -e ../.. 
-# or: pip install -e ../../ --no-deps (if dependencies conflict)
+# Core ART library for RL training (from PyPI)
+openpipe-art>=0.5.1
+tblib>=3.0.0
 
 # Data processing
 datasets>=3.4.1
