@@ -22,15 +22,18 @@ macOS 版本适用于：
 curl -LsSf https://astral.sh/uv/install.sh | sh
 ```
 
-### 2. 安装依赖（CPU 版本）
+### 2. 安装依赖（自动平台检测）
 
 ```bash
-# 基础依赖（不含 GPU 库）
+# 在 macOS 和 Linux 上都使用相同的命令
 uv sync
 
-# 如果你在 Linux/GPU 环境，可以安装 GPU 依赖
-# uv sync --extra gpu
+# ✨ uv 会自动检测你的平台：
+# - macOS: 跳过 GPU 库（vllm, unsloth, bitsandbytes）
+# - Linux: 自动安装 GPU 库
 ```
+
+**重要**：项目使用**平台标记**（platform markers），`uv.lock` 文件在 macOS 和 Linux 之间共享不会有冲突！
 
 ### 3. 设置环境变量
 
