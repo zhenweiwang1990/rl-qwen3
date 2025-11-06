@@ -1,9 +1,11 @@
 """Rollout logic for email agent evaluation."""
 
-from typing import List, Any, Optional
+import art
+from typing import List, Any, Optional, Union
 from qwen3_agent.data.types import SyntheticQuery
-from qwen3_agent.core import Trajectory, Model
-from qwen3_agent.utils import convert_litellm_choice_to_openai, limit_concurrency
+from art import Trajectory
+from art.utils import limit_concurrency
+from art.utils.litellm import convert_litellm_choice_to_openai
 from litellm import acompletion
 import litellm
 from qwen3_agent.tools import search_emails, read_email
@@ -20,6 +22,9 @@ from qwen3_agent.config import PolicyConfig
 import textwrap
 from tenacity import retry, stop_after_attempt
 import logging
+
+# Type alias for models - supports both ART models and local models
+Model = Union[art.Model, art.TrainableModel]
 
 litellm.cache = Cache(type=LiteLLMCacheType.DISK)
 
@@ -284,28 +289,32 @@ async def rollout(
         # Determine model name for LiteLLM
         litellm_model_name = model.config.litellm_model_name
         if litellm_model_name is None:
-            # For standalone mode with custom inference URL, use OpenAI-compatible format
-            if model.inference_base_url:
-                # Use the inference_model_name if set, otherwise use base_model
-                is_trainable = getattr(model, 'trainable', False)
-                if is_trainable and hasattr(model, 'base_model'):
-                    litellm_model_name = f"openai/{model.base_model}"
+            # Check if using art.TrainableModel with base_url attribute
+            base_url = getattr(model, 'inference_base_url', None) or getattr(model, 'base_url', None)
+            if base_url:
+                # For ART models, use hosted_vllm format
+                if hasattr(model, 'trainable') and model.trainable:
+                    litellm_model_name = f"hosted_vllm/{model.name}"
                 else:
                     litellm_model_name = f"openai/{model.get_inference_name()}"
             else:
-                # Fallback to hosted_vllm for backward compatibility
+                # Fallback to hosted_vllm
                 litellm_model_name = f"hosted_vllm/{model.name}"
 
-        # Check if model is trainable (only TrainableModel has this attribute)
+        # Check if model is trainable
         is_trainable = getattr(model, 'trainable', False)
+        
+        # Get base_url and api_key - support both ART Model and local Model
+        base_url = getattr(model, 'inference_base_url', None) or getattr(model, 'base_url', None)
+        api_key = getattr(model, 'inference_api_key', None) or getattr(model, 'api_key', None)
 
         # Build completion kwargs
         completion_kwargs = {
             "model": litellm_model_name,
-            "base_url": model.inference_base_url,
+            "base_url": base_url,
             "messages": traj.messages(),
             "caching": not is_trainable,
-            "api_key": model.inference_api_key,
+            "api_key": api_key,
             "max_completion_tokens": model.config.max_tokens,
             # Make timeout and retries configurable for faster failure visibility
             "timeout": int(os.environ.get("LITELLM_TIMEOUT", "60")),
@@ -315,8 +324,10 @@ async def rollout(
         # Add tools if configured
         if model.config.use_tools:
             completion_kwargs["tools"] = tools
-            # Do NOT force tool_choice; many OpenAI-compatible servers (vLLM)
-            # error on unsupported modes. Let the server decide.
+            # For trainable models, don't force tool_choice
+            # For non-trainable comparison models, optionally enforce tool usage
+            if not is_trainable:
+                completion_kwargs["tool_choice"] = None  # Let model decide
         
         # Make the API call with robust error logging
         try:

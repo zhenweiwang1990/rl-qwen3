@@ -1,10 +1,16 @@
 """Benchmark evaluation utilities."""
 
-from qwen3_agent.core import Model, Trajectory, gather_trajectories
+import art
+from typing import Union
+from art import Trajectory
+from art import gather_trajectories
 from qwen3_agent.rollout import rollout
 from qwen3_agent.data import load_synthetic_queries
 import polars as pl
 import os
+
+# Support both ART models and any compatible model type
+Model = Union[art.Model, art.TrainableModel]
 
 
 async def benchmark_model(

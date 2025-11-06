@@ -1,16 +1,18 @@
 # Qwen3 Email Agent
 
-A reinforcement learning project for training and evaluating Qwen3 14B model as an email search agent. The agent learns to search through email databases using three tools (search, read, and answer) to answer user queries about their emails.
+A complete reinforcement learning project for training **OpenPipe/Qwen3-14B-Instruct** as an email search agent using the **OpenPipe ART** library. The agent learns to search through email databases using three tools (search, read, and answer) to answer user queries about their emails.
 
 ## Features
 
-- 🚀 **Train Qwen3 14B** on email search tasks using reinforcement learning
+- 🔥 **Full RL Training** with gradient updates using OpenPipe ART (GRPO/PPO)
+- 💾 **Checkpoint Management** - automatic save/load with S3 backup
 - 📊 **Comprehensive Evaluation** with detailed metrics and benchmarking
+- 📈 **WandB Integration** for training monitoring and visualization
 - 🐳 **Docker Support** for easy deployment on CUDA-enabled Linux servers
 - 🍎 **Apple Silicon Support** for training on Mac (MPS backend)
 - 📝 **Detailed Logging** with verbose mode for debugging
 - 🔧 **Flexible Configuration** via environment variables
-- ☁️ **S3 Integration** for model checkpoint backup
+- ☁️ **S3 Integration** for model checkpoint backup and recovery
 
 ## Project Structure
 
@@ -39,11 +41,13 @@ rl-qwen3/
 ## Requirements
 
 - **Python 3.10, 3.11, or 3.12** (Python 3.13+ is not supported due to Pydantic v1 dependencies)
-- OpenAI API key for evaluation
-- (Optional) NVIDIA GPU with CUDA for faster training
+- **NVIDIA GPU with CUDA** (recommended for training) or Apple Silicon with MPS
+- **OpenAI API key** for GPT-4o evaluation
+- **WandB account** (optional but recommended) for training monitoring
+- **AWS S3 bucket** (optional) for checkpoint backup
 - (Optional) Docker for containerized deployment
 
-⚠️ **Important**: If you're using Python 3.13+, please use Docker or install Python 3.12. See [PYTHON_VERSION.md](PYTHON_VERSION.md) for details.
+⚠️ **Important**: If you're using Python 3.13+, please use Docker or install Python 3.12.
 
 ## Quick Start
 
@@ -80,47 +84,82 @@ vim .env
 
 # Activate virtual environment
 source venv/bin/activate
-```
 
-### 2. Docker Setup (Recommended for Linux with CUDA)
-
-```bash
-# Build and start GPU-enabled container
-docker-compose up -d qwen3-train-gpu
-
-# Enter the container
-docker exec -it qwen3-email-agent-train-gpu /bin/bash
-
-# Inside container, run training
-./scripts/train.sh
+# Generate email database
+./scripts/generate_database.sh
 ```
 
 ## Usage
 
-### Training
+### Full RL Training (with Gradient Updates)
 
-#### Local Training
+This project now includes **complete reinforcement learning training** with real gradient updates, checkpoint management, and S3 backup using the OpenPipe ART library.
+
+#### Prerequisites
+
+1. **Install dependencies**:
+```bash
+pip install -r requirements.txt
+```
+
+2. **Configure environment**:
+```bash
+cp env.example .env
+vim .env
+```
+
+Required settings in `.env`:
+- `OPENAI_API_KEY` - for GPT-4o evaluation
+- `WANDB_API_KEY` - for training monitoring (get from https://wandb.ai)
+- `BACKUP_BUCKET` - S3 bucket for checkpoints (optional but recommended)
+- `AWS_ACCESS_KEY_ID` / `AWS_SECRET_ACCESS_KEY` - AWS credentials
+
+3. **Generate email database**:
+```bash
+./scripts/generate_database.sh
+```
+
+#### Run Training
 
 ```bash
 # Activate virtual environment
 source venv/bin/activate
 
-# Run training with default config
-./scripts/train.sh
+# Run full RL training with default config
+./scripts/train_with_rl.sh
+
+# Or with custom RUN_ID
+./scripts/train_with_rl.sh 002
 
 # Or run directly with custom parameters
 RUN_ID=002 VERBOSE=true NUM_EPOCHS=2 python -m qwen3_agent.train
 ```
 
-#### Docker Training
+#### What Happens During Training
 
-```bash
-# GPU training (Linux with CUDA)
-docker-compose up qwen3-train-gpu
+1. **Initialization**: 
+   - ART LocalAPI initializes training backend (vLLM + LoRA)
+   - Restores checkpoints from S3 if available
+   - Loads training/validation datasets
 
-# CPU training (for testing)
-docker-compose up qwen3-train-cpu
-```
+2. **Training Loop** (for each step):
+   - Generate trajectory groups via rollout
+   - **Calculate advantages and rewards**
+   - **Perform gradient updates using GRPO/PPO**
+   - **Update model weights**
+   - Log metrics to WandB
+
+3. **Evaluation** (every N steps):
+   - Run benchmark on validation set
+   - Log evaluation metrics
+   - Save checkpoint
+   - Clean up old checkpoints (keep best + latest)
+   - Push to S3
+
+4. **Completion**:
+   - Final evaluation
+   - Save final checkpoint
+   - Push to S3
 
 ### Benchmarking
 
@@ -146,7 +185,7 @@ Test a single scenario with detailed logging:
 
 ```bash
 # Test with GPT-4o
-./scripts/quick_eval.sh gpt-4o
+./scripts/quick_eval.sh gpt-5-mini
 
 # Test with your trained model
 ./scripts/quick_eval.sh qwen3-email-agent-001
@@ -164,6 +203,22 @@ The quick evaluation script will:
   - Agent behavior details
   - Error tracking
   - Full metrics in a grid format
+
+## 🤖 About OpenPipe/Qwen3-14B-Instruct
+
+This project uses [OpenPipe/Qwen3-14B-Instruct](https://huggingface.co/OpenPipe/Qwen3-14B-Instruct), which is specifically optimized for agent training workflows:
+
+- **Optimized for ART**: Fine-tuned to work seamlessly with the ART training framework
+- **Superior Tool Calling**: Enhanced function calling capabilities for multi-tool workflows  
+- **Strong Reasoning**: Excellent performance on multi-step reasoning tasks
+- **Efficient Training**: Optimized for LoRA fine-tuning with GRPO
+- **Community Proven**: Successfully used in production agent systems
+
+According to the [OpenPipe ART examples](https://github.com/OpenPipe/ART), Qwen3 models have demonstrated excellent results in various agent tasks including:
+- 📧 Email search and retrieval (this project)
+- 🎮 Game playing (2048, Tic Tac Toe, Codenames)
+- 🔧 Tool use with MCP servers
+- 🧠 Multi-step reasoning tasks
 
 ## Configuration
 
@@ -329,17 +384,65 @@ Partial credit is given for:
 - Not attempting invalid emails (+0.1)
 - Correct sources even if answer is wrong (+0.1)
 
+## Understanding the Training Process
+
+### Model Checkpoints
+
+Checkpoints are saved at:
+- **Local**: `.art/qwen3_email_agent/models/qwen3-email-agent-{RUN_ID}/`
+- **S3**: `s3://{BACKUP_BUCKET}/qwen3_email_agent/models/qwen3-email-agent-{RUN_ID}/`
+
+Each checkpoint includes:
+- LoRA adapter weights
+- Training state (optimizer, step count)
+- Model configuration
+- Training history
+
+### Monitoring Training
+
+#### WandB Dashboard
+View real-time metrics at https://wandb.ai:
+- `train/avg_reward` - Average reward per training batch
+- `train/policy_loss` - Policy gradient loss
+- `train/kl_div` - KL divergence from reference model
+- `val/reward` - Validation reward
+- `val/answer_correct` - Validation accuracy
+
+#### Local Logs
+```bash
+# Watch training progress
+tail -f training.log
+
+# Monitor GPU usage
+watch -n 1 nvidia-smi
+```
+
+### Configuration Deep Dive
+
+Key training hyperparameters:
+
+| Parameter | Default | Description |
+|-----------|---------|-------------|
+| `TRAJECTORIES_PER_GROUP` | 6 | Samples per scenario (for advantage calculation) |
+| `GROUPS_PER_STEP` | 8 | Scenarios per training step |
+| `LEARNING_RATE` | 1.2e-5 | Gradient descent learning rate |
+| `EVAL_STEPS` | 30 | Evaluation frequency |
+| `NUM_EPOCHS` | 4 | Complete passes through dataset |
+
+**Batch size per step** = `TRAJECTORIES_PER_GROUP` × `GROUPS_PER_STEP` = 48 trajectories
+
 ## Key Differences from art-e
 
-This project is based on the `art-e` project but with several improvements:
+This project is a **standalone version** of the `art-e` project with several improvements:
 
-1. **GPT-4o Evaluation**: Uses OpenAI's GPT-4o for answer correctness evaluation (instead of Gemini)
-2. **Cleaner Structure**: More organized code structure with better separation of concerns
-3. **Better Logging**: Enhanced verbose logging for debugging
-4. **Docker Support**: Full Docker and docker-compose support for easy deployment
-5. **Apple Silicon**: Explicit MPS backend support for Mac training
-6. **Environment Config**: All configuration via environment variables
-7. **Better Scripts**: Improved shell scripts for common operations
+1. **Independent Package**: Works as a standalone project, imports ART as a dependency
+2. **GPT-4o Evaluation**: Uses OpenAI's GPT-4o for answer correctness evaluation
+3. **Cleaner Structure**: More organized code structure with better separation of concerns
+4. **Better Logging**: Enhanced verbose logging for debugging
+5. **Docker Support**: Full Docker and docker-compose support for easy deployment
+6. **Apple Silicon**: Explicit MPS backend support for Mac training
+7. **Environment Config**: All configuration via environment variables
+8. **Better Scripts**: Improved shell scripts for common operations
 
 ## Troubleshooting
 
