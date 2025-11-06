@@ -278,11 +278,11 @@ docker-compose up qwen3-train-gpu  # Uses Python 3.10 in container
 # macOS with Homebrew
 brew install python@3.12
 
-# Create venv with Python 3.12
-python3.12 -m venv venv
-source venv/bin/activate
-pip install -r requirements.txt
-pip install -e .
+# Install uv if not already installed
+curl -LsSf https://astral.sh/uv/install.sh | sh
+
+# Use uv to create environment and install dependencies
+uv sync
 ```
 
 ### Import errors
@@ -290,9 +290,10 @@ pip install -e .
 Reinstall dependencies:
 
 ```bash
-source venv/bin/activate
-pip install --upgrade -r requirements.txt
-pip install -e .
+# With uv (recommended)
+uv sync --refresh
+
+# This will update all dependencies and reinstall the package
 ```
 
 ## Next Steps

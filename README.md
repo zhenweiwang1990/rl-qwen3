@@ -33,8 +33,8 @@ rl-qwen3/
 ├── Dockerfile             # CUDA Docker image
 ├── Dockerfile.cpu         # CPU-only Docker image
 ├── docker-compose.yml     # Docker Compose configuration
-├── requirements.txt       # Python dependencies
-├── pyproject.toml         # Project metadata
+├── pyproject.toml         # Project metadata and dependencies
+├── uv.lock                # Locked dependencies for uv
 └── README.md              # This file
 ```
 
@@ -47,7 +47,9 @@ rl-qwen3/
 - **AWS S3 bucket** (optional) for checkpoint backup
 - (Optional) Docker for containerized deployment
 
-⚠️ **Important**: If you're using Python 3.13+, please use Docker or install Python 3.12.
+⚠️ **Important Notes**:
+- If you're using Python 3.13+, please use Docker or install Python 3.12.
+- **macOS Users**: See [Mac 快速开始指南 (QUICKSTART_MAC.md)](QUICKSTART_MAC.md) for CPU-only installation without GPU dependencies.
 
 ## Quick Start
 

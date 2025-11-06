@@ -43,8 +43,8 @@ All notable changes to the Qwen3 Email Agent project will be documented in this 
 - Code comments and docstrings throughout
 
 #### Configuration
-- `pyproject.toml` - Python project metadata
-- `requirements.txt` - Dependency specification
+- `pyproject.toml` - Project metadata and dependency specification
+- `uv.lock` - Locked dependencies for reproducible builds
 - `env.example` - Environment variable template
 - `.gitignore` - Git ignore rules
 - `.dockerignore` - Docker ignore rules

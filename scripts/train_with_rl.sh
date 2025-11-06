@@ -13,7 +13,7 @@
 #   ./scripts/train_with_rl.sh 001
 #
 # Prerequisites:
-#   1. Install dependencies: pip install -r requirements.txt
+#   1. Install dependencies: uv sync
 #   2. Configure .env file with API keys and S3 settings
 #   3. Generate email database: ./scripts/generate_database.sh
 # ============================================================================

@@ -9,7 +9,7 @@
 ```bash
 pip install wandb
 # 或
-uv sync  # 已包含在 requirements.txt
+uv sync  # 自动从 pyproject.toml 安装依赖
 ```
 
 ### 2. 登录 WandB
