@@ -1,0 +1,276 @@
+# ============================================
+# Python
+# ============================================
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+
+# Distribution / packaging
+build/
+develop-eggs/
+dist/
+downloads/
+eggs/
+.eggs/
+lib/
+lib64/
+parts/
+sdist/
+var/
+wheels/
+pip-wheel-metadata/
+share/python-wheels/
+*.egg-info/
+.installed.cfg
+*.egg
+MANIFEST
+
+# PyInstaller
+*.manifest
+*.spec
+
+# Unit test / coverage reports
+htmlcov/
+.tox/
+.nox/
+.coverage
+.coverage.*
+.cache
+nosetests.xml
+coverage.xml
+*.cover
+*.py,cover
+.hypothesis/
+.pytest_cache/
+pytestdebug.log
+
+# ============================================
+# Virtual Environments
+# ============================================
+venv/
+env/
+ENV/
+.venv/
+virtualenv/
+
+# Pipenv
+Pipfile.lock
+
+# Poetry
+poetry.lock
+
+# UV lock file (if using uv)
+uv.lock
+
+# ============================================
+# Environment Variables
+# ============================================
+.env
+.env.local
+.env.*.local
+*.env
+
+# Keep the example file
+!env.example
+!.env.example
+
+# ============================================
+# IDEs and Editors
+# ============================================
+# VSCode
+.vscode/
+*.code-workspace
+
+# PyCharm
+.idea/
+*.iml
+
+# Vim
+*.swp
+*.swo
+*~
+.vim/
+
+# Emacs
+*~
+\#*\#
+/.emacs.desktop
+/.emacs.desktop.lock
+*.elc
+
+# Sublime Text
+*.sublime-project
+*.sublime-workspace
+
+# ============================================
+# Machine Learning / Data
+# ============================================
+# Datasets
+data/
+datasets/
+
+# Keep qwen3_agent/data source code
+!qwen3_agent/data/
+*.db
+*.sqlite
+*.sqlite3
+*.csv
+*.tsv
+*.json.gz
+*.jsonl
+*.parquet
+
+# Enron email database (generated)
+enron_emails.db
+
+# Model artifacts
+checkpoints/
+models/
+model_cache/
+*.pt
+*.pth
+*.ckpt
+*.safetensors
+*.bin
+*.onnx
+*.h5
+*.pkl
+*.pickle
+
+# Hugging Face cache
+.cache/
+transformers_cache/
+huggingface/
+
+# ============================================
+# Logs and Outputs
+# ============================================
+logs/
+*.log
+*.out
+
+# TensorBoard
+runs/
+tensorboard/
+
+# Weights & Biases
+wandb/
+
+# MLflow
+mlruns/
+
+# Output files
+output/
+outputs/
+results/
+benchmark_results_*.csv
+model_comparison.csv
+
+# ============================================
+# Jupyter
+# ============================================
+.ipynb_checkpoints/
+*.ipynb
+!examples/*.ipynb
+
+# Jupyter metadata
+.jupyter/
+
+# ============================================
+# OS Specific
+# ============================================
+# macOS
+.DS_Store
+.AppleDouble
+.LSOverride
+Icon
+._*
+
+# Windows
+Thumbs.db
+Thumbs.db:encryptable
+ehthumbs.db
+ehthumbs_vista.db
+*.stackdump
+[Dd]esktop.ini
+$RECYCLE.BIN/
+
+# Linux
+*~
+.directory
+.Trash-*
+
+# ============================================
+# Docker
+# ============================================
+# Docker volumes
+docker-volumes/
+
+# Keep Docker configuration files
+# (Dockerfile, docker-compose.yml, .dockerignore should be tracked)
+
+# ============================================
+# Temporary Files
+# ============================================
+tmp/
+temp/
+*.tmp
+*.temp
+*.bak
+*.swp
+*.swo
+*~
+
+# ============================================
+# Project Specific
+# ============================================
+# S3 sync temporary files
+.s3_sync/
+
+# Local configuration overrides
+local.env
+config.local.*
+
+# Benchmark outputs
+benchmark_*.html
+benchmark_*.json
+
+# Training outputs
+training_logs/
+training_outputs/
+
+# Profiling
+*.prof
+*.lprof
+
+# ============================================
+# Misc
+# ============================================
+# Compiled source
+*.com
+*.class
+*.dll
+*.exe
+*.o
+*.so
+
+# Archives
+*.7z
+*.dmg
+*.gz
+*.iso
+*.jar
+*.rar
+*.tar
+*.zip
+
+# Backup files
+*.backup
+*~.nib
+
+# Node (if using any JS tools)
+node_modules/
+package-lock.json
+

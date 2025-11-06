@@ -1,0 +1,43 @@
+#!/bin/bash
+set -e
+
+# Start vLLM server for Qwen3 14B model
+# Usage: ./scripts/start_vllm.sh [model_name] [port]
+# Reference: https://huggingface.co/Qwen/Qwen3-14B
+
+MODEL_NAME="${1:-Qwen/Qwen3-14B}"
+PORT="${2:-8000}"
+
+echo "=========================================="
+echo "Starting vLLM Server for Qwen3-14B"
+echo "Model: $MODEL_NAME"
+echo "Port: $PORT"
+echo "=========================================="
+echo ""
+
+# Check if vllm is installed
+if ! command -v vllm &> /dev/null; then
+    echo "Error: vllm is not installed. Please install it with:"
+    echo "  pip install vllm"
+    exit 1
+fi
+
+# Check vLLM version
+VLLM_VERSION=$(python -c "import vllm; print(vllm.__version__)" 2>/dev/null || echo "unknown")
+echo "Detected vLLM version: $VLLM_VERSION"
+echo ""
+
+echo "Starting vLLM server..."
+echo "Access the server at: http://localhost:$PORT/v1"
+echo "To stop the server, press Ctrl+C"
+echo ""
+
+# Start vLLM server with basic settings
+vllm serve "$MODEL_NAME" \
+    --host 0.0.0.0 \
+    --port "$PORT" \
+    --tensor-parallel-size 1 \
+    --gpu-memory-utilization 0.9 \
+    --trust-remote-code \
+    --enable-auto-tool-choice \
+    --tool-call-parser hermes

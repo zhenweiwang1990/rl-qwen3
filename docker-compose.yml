@@ -1,0 +1,83 @@
+version: '3.8'
+
+services:
+  # GPU-enabled training service for Linux with CUDA
+  qwen3-train-gpu:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: qwen3-email-agent-train-gpu
+    runtime: nvidia
+    environment:
+      - NVIDIA_VISIBLE_DEVICES=all
+      - CUDA_VISIBLE_DEVICES=0
+    env_file:
+      - .env
+    volumes:
+      - ./qwen3_agent:/workspace/qwen3_agent
+      - ./data:/workspace/data
+      - ./models:/workspace/models
+      - ./logs:/workspace/logs
+      - ./scripts:/workspace/scripts
+      - ./.env:/workspace/.env
+    working_dir: /workspace
+    stdin_open: true
+    tty: true
+    command: /bin/bash
+    deploy:
+      resources:
+        reservations:
+          devices:
+            - driver: nvidia
+              count: 1
+              capabilities: [gpu]
+
+  # CPU-only service for development/testing
+  qwen3-train-cpu:
+    build:
+      context: .
+      dockerfile: Dockerfile.cpu
+    container_name: qwen3-email-agent-train-cpu
+    env_file:
+      - .env
+    volumes:
+      - ./qwen3_agent:/workspace/qwen3_agent
+      - ./data:/workspace/data
+      - ./models:/workspace/models
+      - ./logs:/workspace/logs
+      - ./scripts:/workspace/scripts
+      - ./.env:/workspace/.env
+    working_dir: /workspace
+    stdin_open: true
+    tty: true
+    command: /bin/bash
+
+  # Benchmark service
+  qwen3-benchmark:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: qwen3-email-agent-benchmark
+    runtime: nvidia
+    environment:
+      - NVIDIA_VISIBLE_DEVICES=all
+      - CUDA_VISIBLE_DEVICES=0
+      - VERBOSE=true
+    env_file:
+      - .env
+    volumes:
+      - ./qwen3_agent:/workspace/qwen3_agent
+      - ./data:/workspace/data
+      - ./models:/workspace/models
+      - ./logs:/workspace/logs
+      - ./.env:/workspace/.env
+    working_dir: /workspace
+    command: /workspace/scripts/benchmark.sh
+    deploy:
+      resources:
+        reservations:
+          devices:
+            - driver: nvidia
+              count: 1
+              capabilities: [gpu]
+
