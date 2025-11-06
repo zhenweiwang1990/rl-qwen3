@@ -2,6 +2,10 @@
 
 from openai.types.chat.chat_completion import Choice, ChoiceLogprobs
 from openai.types.chat.chat_completion_message import ChatCompletionMessage
+from openai.types.chat.chat_completion_message_tool_call import (
+    ChatCompletionMessageToolCall,
+    Function as ToolCallFunction,
+)
 from openai.types.chat.chat_completion_token_logprob import (
     ChatCompletionTokenLogprob,
     TopLogprob,
@@ -13,13 +17,25 @@ def convert_litellm_choice_to_openai(litellm_choice: Choices) -> Choice:
     litellm_message = litellm_choice.message
     assert litellm_message.role == "assistant", "Only assistant messages are supported"
 
-    assert litellm_message.tool_calls is None, (
-        "The conversion function doesn't yet support tool calls"
-    )
+    # Convert tool calls if present
+    tool_calls = None
+    if litellm_message.tool_calls is not None:
+        tool_calls = [
+            ChatCompletionMessageToolCall(
+                id=tc.id,
+                type=tc.type,
+                function=ToolCallFunction(
+                    name=tc.function.name,
+                    arguments=tc.function.arguments,
+                ),
+            )
+            for tc in litellm_message.tool_calls
+        ]
 
     openai_message = ChatCompletionMessage(
         content=litellm_message.content,
         role=litellm_message.role,
+        tool_calls=tool_calls,
     )
 
     # Convert logprobs if they exist
