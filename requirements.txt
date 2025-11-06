@@ -44,4 +44,11 @@ hf-transfer>=0.1.0
 # AWS CLI for S3 backup (optional)
 awscli>=1.38.1
 
+torchtune
+torchao
+peft
+vllm
+unsloth
+unsloth-zoo
+setuptools
 
