@@ -57,12 +57,8 @@ rl-qwen3/
 # Clone the repository (if not already done)
 cd examples/rl-qwen3
 
-# Run setup script
+# Run setup script (installs uv and syncs dependencies)
 ./scripts/setup.sh
-source venv/bin/activate
-
-# Install package
-pip install -e .
 
 # Create .env file from template
 cat > .env << EOF
@@ -83,12 +79,11 @@ EOF
 # Edit the .env file with your actual keys
 vim .env
 
-# Activate virtual environment
-source venv/bin/activate
-
 # Generate email database
 ./scripts/generate_database.sh
 ```
+
+**Note**: This project now uses [uv](https://github.com/astral-sh/uv) for dependency management, which is significantly faster than pip. The setup script will automatically install uv if it's not already present.
 
 ## Usage
 
@@ -100,7 +95,7 @@ This project now includes **complete reinforcement learning training** with real
 
 1. **Install dependencies**:
 ```bash
-pip install -r requirements.txt
+./scripts/setup.sh  # Installs uv and syncs all dependencies
 ```
 
 2. **Configure environment**:
@@ -123,17 +118,14 @@ Required settings in `.env`:
 #### Run Training
 
 ```bash
-# Activate virtual environment
-source venv/bin/activate
-
 # Run full RL training with default config
 ./scripts/train_with_rl.sh
 
 # Or with custom RUN_ID
 ./scripts/train_with_rl.sh 002
 
-# Or run directly with custom parameters
-RUN_ID=002 VERBOSE=true NUM_EPOCHS=2 python -m qwen3_agent.train
+# Or run directly with custom parameters (using uv)
+RUN_ID=002 VERBOSE=true NUM_EPOCHS=2 uv run python -m qwen3_agent.train
 ```
 
 #### What Happens During Training
@@ -490,11 +482,9 @@ python -c "import torch; print(torch.backends.mps.is_available())"
 ### Running Tests
 
 ```bash
-# Install dev dependencies
-pip install pytest
-
-# Run tests
-pytest tests/
+# pytest is already included in dependencies
+# Run tests with uv
+uv run pytest tests/
 ```
 
 ### Adding New Features
@@ -509,8 +499,7 @@ pytest tests/
 We follow PEP 8 style guidelines. Format code with:
 
 ```bash
-pip install black
-black qwen3_agent/
+uv run black qwen3_agent/
 ```
 
 ## Contributing

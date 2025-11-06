@@ -6,7 +6,8 @@ readme = "README.md"
 requires-python = ">=3.10,<3.13"
 dependencies = [
     # Core ART library for RL training
-    "openpipe-art>=0.1.25",
+    "openpipe-art>=0.5.1",
+    "tblib>=3.0.0",
     
     # Data processing
     "datasets>=3.4.1",
@@ -23,6 +24,12 @@ dependencies = [
     "litellm>=1.65.0.post1",
     "transformers>=4.50.3",
     "torch>=2.5.1",
+    "peft",
+    "vllm",
+    "unsloth",
+    "unsloth-zoo",
+    "torchtune",
+    "torchao",
     
     # Utils
     "python-dotenv>=1.1.0",
@@ -32,6 +39,7 @@ dependencies = [
     "tqdm>=4.62.0",
     "pydantic>=2.0.0",
     "pytest>=8.3.5",
+    "setuptools",
     
     # Visualization & Monitoring
     "matplotlib>=3.10.1",
@@ -41,8 +49,12 @@ dependencies = [
     "ipykernel>=6.29.5",
     "ipywidgets>=8.1.6",
     
-    # Cloud
+    # Cloud & AWS
     "skypilot[runpod]>=0.8.1",
+    "awscli>=1.38.1",
+    
+    # Performance
+    "hf-transfer>=0.1.0",
 ]
 
 [build-system]

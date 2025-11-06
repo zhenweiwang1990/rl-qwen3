@@ -20,21 +20,19 @@ RUN apt-get update && apt-get install -y \
 # Create symbolic links for python
 RUN ln -s /usr/bin/python3.10 /usr/bin/python
 
-# Upgrade pip
-RUN pip install --upgrade pip
-
-# Copy requirements first for better caching
-COPY requirements.txt .
-RUN pip install --no-cache-dir -r requirements.txt
+# Install uv
+RUN curl -LsSf https://astral.sh/uv/install.sh | sh
+ENV PATH="/root/.cargo/bin:${PATH}"
 
 # Copy project files
+COPY pyproject.toml .
+COPY uv.lock .
+COPY README.md .
 COPY qwen3_agent/ ./qwen3_agent/
 COPY scripts/ ./scripts/
-COPY pyproject.toml .
-COPY README.md .
 
-# Install the package in development mode
-RUN pip install -e .
+# Install dependencies using uv
+RUN uv sync --frozen
 
 # Set environment variables
 ENV PYTHONUNBUFFERED=1

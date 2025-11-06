@@ -12,40 +12,28 @@ if [ ! -f "pyproject.toml" ]; then
     exit 1
 fi
 
-# Create virtual environment if it doesn't exist
-if [ ! -d "venv" ]; then
-    echo "Creating virtual environment..."
-    python3 -m venv venv
-    echo "✓ Virtual environment created"
-else
-    echo "✓ Virtual environment already exists"
+# Check if uv is installed
+if ! command -v uv &> /dev/null; then
+    echo "uv is not installed. Installing uv..."
+    curl -LsSf https://astral.sh/uv/install.sh | sh
+    echo "✓ uv installed"
+    echo ""
+    echo "Please restart your terminal or run:"
+    echo "  source $HOME/.cargo/env"
+    echo ""
+    echo "Then run this script again."
+    exit 0
 fi
 
-# Activate virtual environment
+echo "Using uv version: $(uv --version)"
 echo ""
-echo "Activating virtual environment..."
-source venv/bin/activate
 
-# Upgrade pip
-echo ""
-echo "Upgrading pip..."
-pip install --upgrade pip
-
-# Install dependencies
-echo ""
-echo "Installing dependencies..."
-pip install -r requirements.txt
+# Sync dependencies using uv
+echo "Syncing dependencies with uv..."
+uv sync
 
 echo ""
-echo "✓ Dependencies installed"
-
-# Install the project in editable mode
-echo ""
-echo "Installing qwen3_agent package..."
-pip install -e .
-
-echo ""
-echo "✓ qwen3_agent package installed"
+echo "✓ Dependencies synced"
 
 # Check for .env file
 if [ ! -f ".env" ]; then
@@ -76,13 +64,14 @@ echo "=========================================="
 echo "Setup Complete!"
 echo "=========================================="
 echo ""
-echo "To activate the environment in the future, run:"
-echo "  source venv/bin/activate"
+echo "🚀 Your project is now using uv for dependency management!"
 echo ""
-echo "To start training, run:"
-echo "  ./scripts/train.sh"
+echo "To run commands with uv, use:"
+echo "  uv run python -m qwen3_agent.train"
+echo "  uv run python -m qwen3_agent.benchmark"
 echo ""
-echo "To run benchmarks, run:"
+echo "Or use the convenience scripts:"
+echo "  ./scripts/train_with_rl.sh"
 echo "  ./scripts/benchmark.sh"
 echo ""
 

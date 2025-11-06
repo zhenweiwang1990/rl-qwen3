@@ -6,13 +6,9 @@ echo "Quick Training Test - Minimal Configuration"
 echo "=========================================="
 echo ""
 
-# Check if virtual environment exists
-if [ -d ".venv" ]; then
-    source .venv/bin/activate
-elif [ -d "venv" ]; then
-    source venv/bin/activate
-else
-    echo "Error: Virtual environment not found. Please run 'uv sync' first."
+# Check if uv is installed
+if ! command -v uv &> /dev/null; then
+    echo "Error: uv is not installed. Please run ./scripts/setup.sh first."
     exit 1
 fi
 
@@ -68,7 +64,7 @@ echo ""
 echo "Starting quick training test..."
 echo ""
 
-python -m qwen3_agent.train
+uv run python -m qwen3_agent.train
 
 echo ""
 echo "=========================================="

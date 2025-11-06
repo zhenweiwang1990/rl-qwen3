@@ -6,14 +6,11 @@ echo "Generating Email Database"
 echo "=========================================="
 echo ""
 
-# Check if virtual environment exists
-if [ ! -d "venv" ]; then
-    echo "Error: Virtual environment not found. Please run ./scripts/setup.sh first."
+# Check if uv is installed
+if ! command -v uv &> /dev/null; then
+    echo "Error: uv is not installed. Please run ./scripts/setup.sh first."
     exit 1
 fi
-
-# Activate virtual environment
-source venv/bin/activate
 
 # Check if database already exists
 if [ -f "enron_emails.db" ]; then
@@ -49,7 +46,7 @@ print(f"Database location: {os.path.abspath('enron_emails.db')}")
 EOF
 
 # Run the generation script
-python /tmp/generate_db.py
+uv run python /tmp/generate_db.py
 
 # Cleanup
 rm /tmp/generate_db.py

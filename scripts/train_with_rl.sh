@@ -115,10 +115,11 @@ fi
 echo -e "\n${BLUE}Starting training...${NC}"
 echo ""
 
-# Activate virtual environment if it exists
-if [ -d "venv" ]; then
-    echo -e "${GREEN}✓ Activating virtual environment${NC}"
-    source venv/bin/activate
+# Check if uv is installed
+if ! command -v uv &> /dev/null; then
+    echo -e "${RED}✗ uv is not installed${NC}"
+    echo "Please run ./scripts/setup.sh first to install uv"
+    exit 1
 fi
 
 # Run training with proper error handling
@@ -126,7 +127,7 @@ echo -e "\n${BLUE}================================================${NC}"
 echo -e "${BLUE}  Starting RL Training Loop${NC}"
 echo -e "${BLUE}================================================${NC}\n"
 
-python -m qwen3_agent.train
+uv run python -m qwen3_agent.train
 
 EXIT_CODE=$?
 

@@ -6,14 +6,11 @@ echo "Compare Multiple Models"
 echo "=========================================="
 echo ""
 
-# Check if virtual environment exists
-if [ ! -d "venv" ]; then
-    echo "Error: Virtual environment not found. Please run ./scripts/setup.sh first."
+# Check if uv is installed
+if ! command -v uv &> /dev/null; then
+    echo "Error: uv is not installed. Please run ./scripts/setup.sh first."
     exit 1
 fi
-
-# Activate virtual environment
-source venv/bin/activate
 
 # Check if .env file exists
 if [ ! -f ".env" ]; then
@@ -157,7 +154,7 @@ done
 export MODELS_TO_COMPARE="${MODELS_STR}"
 
 # Run comparison
-python /tmp/compare_models.py
+uv run python /tmp/compare_models.py
 
 # Cleanup
 rm /tmp/compare_models.py

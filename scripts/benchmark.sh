@@ -6,14 +6,11 @@ echo "Qwen3 Email Agent - Benchmark"
 echo "=========================================="
 echo ""
 
-# Check if virtual environment exists
-if [ ! -d "venv" ]; then
-    echo "Error: Virtual environment not found. Please run ./scripts/setup.sh first."
+# Check if uv is installed
+if ! command -v uv &> /dev/null; then
+    echo "Error: uv is not installed. Please run ./scripts/setup.sh first."
     exit 1
 fi
-
-# Activate virtual environment
-source venv/bin/activate
 
 # Check if .env file exists
 if [ ! -f ".env" ]; then
@@ -105,7 +102,7 @@ asyncio.run(main())
 EOF
 
 # Run benchmark
-python /tmp/run_benchmark.py
+uv run python /tmp/run_benchmark.py
 
 # Cleanup
 rm /tmp/run_benchmark.py

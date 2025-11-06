@@ -6,13 +6,9 @@ echo "Qwen3 Email Agent - Training"
 echo "=========================================="
 echo ""
 
-# Check if virtual environment exists (check both venv and .venv)
-if [ -d ".venv" ]; then
-    source .venv/bin/activate
-elif [ -d "venv" ]; then
-    source venv/bin/activate
-else
-    echo "Error: Virtual environment not found. Please run 'uv sync' first."
+# Check if uv is installed
+if ! command -v uv &> /dev/null; then
+    echo "Error: uv is not installed. Please run ./scripts/setup.sh first."
     exit 1
 fi
 
@@ -42,7 +38,7 @@ echo ""
 echo "Starting training..."
 echo ""
 
-python -m qwen3_agent.train
+uv run python -m qwen3_agent.train
 
 echo ""
 echo "=========================================="

@@ -23,10 +23,12 @@ cd examples/rl-qwen3
 ./scripts/setup.sh
 
 # This will:
-# - Create virtual environment
-# - Install dependencies
+# - Install uv (if not already installed)
+# - Sync all dependencies using uv
 # - Check for required files
 ```
+
+**Note**: This project uses [uv](https://github.com/astral-sh/uv) for dependency management, which is significantly faster than pip.
 
 ### 2. Configure Environment
 
@@ -47,11 +49,8 @@ OPENAI_API_KEY=sk-your-actual-openai-key-here
 ### 3. Test Installation
 
 ```bash
-# Activate virtual environment
-source venv/bin/activate
-
-# Run import test
-python test_import.py
+# Run import test with uv
+uv run python test_import.py
 
 # Expected output: "✓ All tests passed!"
 ```
@@ -88,6 +87,9 @@ SHOW_TRAJECTORY_DETAILS=true ./scripts/quick_eval.sh
 ```bash
 # Quick training run (2 epochs, small batch)
 RUN_ID=test GROUPS_PER_STEP=2 NUM_EPOCHS=2 VERBOSE=true ./scripts/train.sh
+
+# Or use uv directly
+RUN_ID=test GROUPS_PER_STEP=2 NUM_EPOCHS=2 VERBOSE=true uv run python -m qwen3_agent.train
 
 # This will:
 # - Download the email database (first time only)
