@@ -6,7 +6,7 @@ It provides basic training functionality for the email agent.
 
 import asyncio
 from dotenv import load_dotenv
-from typing import List
+from typing import List, Optional
 import os
 
 from qwen3_agent.rollout import rollout
@@ -18,6 +18,14 @@ from qwen3_agent.config import PolicyConfig, TrainingConfig, get_device
 from qwen3_agent.benchmark import benchmark_model
 
 load_dotenv()
+
+# Optional WandB integration
+try:
+    import wandb
+    WANDB_AVAILABLE = True
+except ImportError:
+    WANDB_AVAILABLE = False
+    wandb = None  # type: ignore
 
 
 def create_trainable_model(
@@ -76,6 +84,39 @@ async def run_training(
     
     training_config = model.config.training_config
     device = get_device()
+    
+    # Initialize WandB if available and enabled
+    use_wandb = WANDB_AVAILABLE and os.environ.get("WANDB_MODE") != "disabled"
+    if use_wandb:
+        wandb_project = os.environ.get("WANDB_PROJECT", "qwen3-email-agent")
+        wandb_entity = os.environ.get("WANDB_ENTITY", None)
+        
+        wandb.init(
+            project=wandb_project,
+            entity=wandb_entity,
+            name=model.name,
+            config={
+                "base_model": model.base_model,
+                "device": device,
+                "trajectories_per_group": training_config.trajectories_per_group,
+                "groups_per_step": training_config.groups_per_step,
+                "learning_rate": training_config.learning_rate,
+                "eval_steps": training_config.eval_steps,
+                "training_dataset_size": training_config.training_dataset_size,
+                "val_set_size": training_config.val_set_size,
+                "num_epochs": training_config.num_epochs,
+                "max_turns": model.config.max_turns,
+                "max_tokens": model.config.max_tokens,
+            },
+            tags=["qwen3", "email-agent", "rl-training"],
+        )
+        if verbose or model.config.verbose:
+            print(f"✓ WandB initialized: {wandb.run.url}")  # type: ignore
+    elif verbose or model.config.verbose:
+        if not WANDB_AVAILABLE:
+            print("⚠ WandB not installed. Install with: pip install wandb")
+        else:
+            print("⚠ WandB disabled (set WANDB_MODE=online to enable)")
     
     if verbose or model.config.verbose:
         print(f"\n{'='*60}")
@@ -136,7 +177,16 @@ async def run_training(
             if verbose or model.config.verbose:
                 print(f"\n--- Evaluating at Global Step {global_step} ---")
             
-            await benchmark_model(model, limit=training_config.val_set_size, verbose=verbose or model.config.verbose)
+            eval_results = await benchmark_model(model, limit=training_config.val_set_size, verbose=verbose or model.config.verbose)
+            
+            # Log evaluation metrics to WandB
+            if use_wandb and eval_results is not None:
+                eval_dict = eval_results.to_dict()
+                if eval_dict and len(eval_dict) > 0:
+                    # Extract metrics from first row
+                    metrics = {k: v[0] if isinstance(v, list) and len(v) > 0 else v 
+                              for k, v in eval_dict.items()}
+                    wandb.log({f"eval/{k}": v for k, v in metrics.items()}, step=global_step)  # type: ignore
 
         # Generate trajectories for training
         if verbose or model.config.verbose:
@@ -169,15 +219,39 @@ async def run_training(
 
         # In a full implementation, you would train on these trajectories here
         # For now, we just log the statistics
+        total_trajectories = sum(len(group) for group in groups)
+        avg_reward = sum(
+            t.reward for group in groups for t in group
+        ) / max(total_trajectories, 1) if total_trajectories > 0 else 0.0
+        
         if verbose or model.config.verbose:
-            total_trajectories = sum(len(group) for group in groups)
-            avg_reward = sum(
-                t.reward for group in groups for t in group
-            ) / max(total_trajectories, 1)
             print(f"Generated {total_trajectories} trajectories")
             print(f"Average reward: {avg_reward:.3f}")
             print(f"\nNOTE: Training step skipped - implement gradient updates for full training")
             print(f"Completed step {global_step}")
+        
+        # Log training metrics to WandB
+        if use_wandb:
+            train_metrics = {
+                "train/total_trajectories": total_trajectories,
+                "train/avg_reward": avg_reward,
+                "train/epoch": epoch + 1,
+                "train/epoch_step": epoch_step,
+            }
+            # Aggregate trajectory metrics
+            if total_trajectories > 0:
+                all_metrics = {}
+                for group in groups:
+                    for traj in group:
+                        for k, v in traj.metrics.items():
+                            if k not in all_metrics:
+                                all_metrics[k] = []
+                            all_metrics[k].append(v)
+                # Average metrics
+                for k, values in all_metrics.items():
+                    train_metrics[f"train/{k}"] = sum(values) / len(values)
+            
+            wandb.log(train_metrics, step=global_step)  # type: ignore
 
     # Final evaluation
     if verbose or model.config.verbose:
@@ -185,11 +259,22 @@ async def run_training(
         print("Training loop complete! Running final evaluation...")
         print(f"{'='*60}\n")
     
-    await benchmark_model(model, limit=training_config.val_set_size, verbose=verbose or model.config.verbose)
+    final_eval_results = await benchmark_model(model, limit=training_config.val_set_size, verbose=verbose or model.config.verbose)
+    
+    # Log final evaluation to WandB
+    if use_wandb and final_eval_results is not None:
+        eval_dict = final_eval_results.to_dict()
+        if eval_dict and len(eval_dict) > 0:
+            metrics = {k: v[0] if isinstance(v, list) and len(v) > 0 else v 
+                      for k, v in eval_dict.items()}
+            wandb.log({f"final_eval/{k}": v for k, v in metrics.items()})  # type: ignore
+        wandb.finish()  # type: ignore
     
     if verbose or model.config.verbose:
         print(f"\n{'='*60}")
         print(f"Training finished for {model.name}")
+        if use_wandb:
+            print(f"View results at: {wandb.run.url}")  # type: ignore
         print(f"{'='*60}\n")
 
 
