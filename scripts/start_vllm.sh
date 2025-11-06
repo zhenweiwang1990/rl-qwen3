@@ -14,18 +14,6 @@ echo "Model: $MODEL_NAME"
 echo "Port: $PORT"
 echo "=========================================="
 echo ""
-pip install hf-transfer
-# Check if vllm is installed
-if ! command -v vllm &> /dev/null; then
-    echo "Error: vllm is not installed. Please install it with:"
-    echo "  pip install vllm"
-    exit 1
-fi
-
-# Check vLLM version
-VLLM_VERSION=$(python -c "import vllm; print(vllm.__version__)" 2>/dev/null || echo "unknown")
-echo "Detected vLLM version: $VLLM_VERSION"
-echo ""
 
 echo "Starting vLLM server..."
 echo "Access the server at: http://localhost:$PORT/v1"
@@ -33,7 +21,7 @@ echo "To stop the server, press Ctrl+C"
 echo ""
 
 # Start vLLM server with basic settings
-vllm serve "$MODEL_NAME" \
+uv run vllm serve "$MODEL_NAME" \
     --host 0.0.0.0 \
     --port "$PORT" \
     --tensor-parallel-size 1 \
