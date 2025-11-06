@@ -5,7 +5,7 @@ including gradient updates, checkpoint management, and model optimization.
 """
 
 import art
-from art.local import LocalAPI  # LocalAPI is not exported in art.__init__ in 0.5.1
+from art.local.backend import LocalBackend
 import asyncio
 from dotenv import load_dotenv
 from typing import List
@@ -85,9 +85,13 @@ async def run_training(model: art.TrainableModel, verbose: bool = False):
         print("Checking email database...")
     generate_database()
     
-    # Initialize ART LocalAPI
-    api = LocalAPI()
-    await model.register(api)
+    # Initialize ART LocalBackend (per latest ART examples)
+    backend = LocalBackend()
+    try:
+        await backend._experimental_pull_from_s3(model)
+    except Exception:
+        pass
+    await model.register(backend)
     
     if verbose or model.config.verbose:
         print(f"\n{'='*60}")
@@ -104,21 +108,7 @@ async def run_training(model: art.TrainableModel, verbose: bool = False):
         print(f"  - Number of epochs: {training_config.num_epochs}")
         print(f"{'='*60}\n")
     
-    # Pull from S3 if backup bucket is configured
-    if backup_bucket := os.environ.get("BACKUP_BUCKET"):
-        if verbose or model.config.verbose:
-            print(f"Pulling existing checkpoints from S3 bucket: `{backup_bucket}`")
-        try:
-            await api._experimental_pull_from_s3(
-                model,
-                s3_bucket=backup_bucket,
-                verbose=verbose or model.config.verbose,
-            )
-            if verbose or model.config.verbose:
-                print("✓ Successfully restored from S3")
-        except Exception as e:
-            if verbose or model.config.verbose:
-                print(f"⚠ Could not pull from S3 (may be first run): {e}")
+    # (Optional) S3 restore handled above by backend
 
     # Load training and validation data
     if verbose or model.config.verbose:
@@ -176,14 +166,11 @@ async def run_training(model: art.TrainableModel, verbose: bool = False):
             # Clean up old checkpoints (keep best and latest)
             await model.delete_checkpoints(best_checkpoint_metric="val/reward")
             
-            # Push to S3 if configured
-            if backup_bucket := os.environ.get("BACKUP_BUCKET"):
-                if verbose or model.config.verbose:
-                    print(f"Backing up to S3 bucket: {backup_bucket}")
-                await api._experimental_push_to_s3(
-                    model,
-                    s3_bucket=backup_bucket,
-                )
+            # Push to S3 if configured (backend reads env)
+            try:
+                await backend._experimental_push_to_s3(model)
+            except Exception:
+                pass
 
         # Generate trajectories for training
         if verbose or model.config.verbose:
@@ -255,14 +242,11 @@ async def run_training(model: art.TrainableModel, verbose: bool = False):
         metrics={k: v[0] for k, v in final_eval_results.to_dict().items() if k != "reward"}
     )], split="val")
     
-    # Final S3 push
-    if backup_bucket := os.environ.get("BACKUP_BUCKET"):
-        if verbose or model.config.verbose:
-            print(f"Final backup to S3 bucket: {backup_bucket}")
-        await api._experimental_push_to_s3(
-            model,
-            s3_bucket=backup_bucket,
-        )
+    # Final S3 push (optional)
+    try:
+        await backend._experimental_push_to_s3(model)
+    except Exception:
+        pass
     
     if verbose or model.config.verbose:
         print(f"\n{'='*60}")

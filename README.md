@@ -59,6 +59,7 @@ cd examples/rl-qwen3
 
 # Run setup script
 ./scripts/setup.sh
+source venv/bin/activate
 
 # Install package
 pip install -e .

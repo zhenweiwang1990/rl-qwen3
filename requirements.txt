@@ -1,4 +1,4 @@
-# Core ART library for RL training (from PyPI)
+# Core ART library for RL training (use PyPI)
 openpipe-art>=0.5.1
 tblib>=3.0.0
 
