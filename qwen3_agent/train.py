@@ -5,6 +5,7 @@ including gradient updates, checkpoint management, and model optimization.
 """
 
 import art
+from art.local.api import LocalAPI
 import asyncio
 from dotenv import load_dotenv
 from typing import List
@@ -85,7 +86,7 @@ async def run_training(model: art.TrainableModel, verbose: bool = False):
     generate_database()
     
     # Initialize ART LocalAPI
-    api = art.LocalAPI()
+    api = LocalAPI()
     await model.register(api)
     
     if verbose or model.config.verbose:
@@ -118,7 +119,7 @@ async def run_training(model: art.TrainableModel, verbose: bool = False):
         except Exception as e:
             if verbose or model.config.verbose:
                 print(f"⚠ Could not pull from S3 (may be first run): {e}")
-    
+
     # Load training and validation data
     if verbose or model.config.verbose:
         print("\nLoading training data...")

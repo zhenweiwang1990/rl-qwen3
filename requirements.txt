@@ -1,5 +1,7 @@
 # Core ART library for RL training
-openpipe-art>=0.1.25
+# Install from local source (parent directory)
+# Use: pip install -e ../.. 
+# or: pip install -e ../../ --no-deps (if dependencies conflict)
 
 # Data processing
 datasets>=3.4.1
