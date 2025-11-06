@@ -57,11 +57,11 @@ fi
 echo -e "\n${BLUE}Configuration:${NC}"
 echo "  RUN_ID: ${RUN_ID:-001}"
 echo "  MODEL: ${MODEL_NAME:-OpenPipe/Qwen3-14B-Instruct}"
-echo "  EPOCHS: ${NUM_EPOCHS:-4}"
-echo "  GROUPS_PER_STEP: ${GROUPS_PER_STEP:-8}"
-echo "  TRAJECTORIES_PER_GROUP: ${TRAJECTORIES_PER_GROUP:-6}"
+echo "  EPOCHS: ${NUM_EPOCHS:-1}"
+echo "  GROUPS_PER_STEP: ${GROUPS_PER_STEP:-2}"
+echo "  TRAJECTORIES_PER_GROUP: ${TRAJECTORIES_PER_GROUP:-1}"
 echo "  LEARNING_RATE: ${LEARNING_RATE:-1.2e-5}"
-echo "  EVAL_STEPS: ${EVAL_STEPS:-30}"
+echo "  EVAL_STEPS: ${EVAL_STEPS:-1}"
 echo "  BACKUP_BUCKET: ${BACKUP_BUCKET:-not configured}"
 
 # Check required environment variables

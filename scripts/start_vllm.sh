@@ -14,7 +14,7 @@ echo "Model: $MODEL_NAME"
 echo "Port: $PORT"
 echo "=========================================="
 echo ""
-
+pip install hf-transfer
 # Check if vllm is installed
 if ! command -v vllm &> /dev/null; then
     echo "Error: vllm is not installed. Please install it with:"
