@@ -39,7 +39,18 @@ if [ -f .env ]; then
     echo -e "${GREEN}✓ Loading .env file${NC}"
     # Properly load .env file, handling comments and empty lines
     set -a
-    source <(cat .env | grep -v '^\s*#' | grep -v '^\s*$' | sed 's/#.*//')
+    # Export all variables from .env, filtering out comments and empty lines
+    while IFS='=' read -r key value; do
+        # Skip empty lines and comments
+        [[ -z "$key" || "$key" =~ ^[[:space:]]*# ]] && continue
+        # Remove inline comments from value
+        value="${value%%#*}"
+        # Trim whitespace from value
+        value="${value#"${value%%[![:space:]]*}"}"
+        value="${value%"${value##*[![:space:]]}"}"
+        # Export the variable
+        export "$key=$value"
+    done < <(grep -v '^\s*#' .env | grep -v '^\s*$')
     set +a
 else
     echo -e "${RED}✗ .env file not found${NC}"
