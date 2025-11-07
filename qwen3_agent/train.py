@@ -15,7 +15,7 @@ from qwen3_agent.rollout import rollout
 from qwen3_agent.data import load_synthetic_queries
 from qwen3_agent.data.types import SyntheticQuery
 from qwen3_agent.data.local_email_db import generate_database
-from art.utils import iterate_dataset
+from qwen3_agent.utils.iterate_dataset import iterate_dataset
 from qwen3_agent.config import PolicyConfig, TrainingConfig
 from qwen3_agent.benchmark import benchmark_model
 
