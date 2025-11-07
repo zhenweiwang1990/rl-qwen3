@@ -5,7 +5,7 @@ set -e
 # Usage: ./scripts/quick_eval.sh [model_name]
 # Default: Uses Qwen3 14B via vLLM (hosted locally)
 
-MODEL_NAME="${1:-Qwen/Qwen3-14B}"
+MODEL_NAME="${1:-OpenPipe/Qwen3-14B-Instruct}"
 
 echo "=========================================="
 echo "Quick Evaluation - Single Scenario"
@@ -46,7 +46,7 @@ from tabulate import tabulate
 load_dotenv()
 
 async def main():
-    model_name = sys.argv[1] if len(sys.argv) > 1 else "Qwen/Qwen3-14B"
+    model_name = sys.argv[1] if len(sys.argv) > 1 else "OpenPipe/Qwen3-14B-Instruct"
     
     # Load one test scenario
     scenarios = load_synthetic_queries(split="test", limit=2)

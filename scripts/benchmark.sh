@@ -52,7 +52,7 @@ async def main():
     verbose = os.environ.get("VERBOSE", "false").lower() == "true"
     device = get_device()
 
-    model_name = os.environ.get("MODEL_NAME", "Qwen/Qwen3-14B")
+    model_name = os.environ.get("MODEL_NAME", "OpenPipe/Qwen3-14B-Instruct")
     # Prefer explicit VLLM_BASE_URL if provided, else use INFERENCE_BASE_URL
     vllm_base_url = os.environ.get("VLLM_BASE_URL") or os.environ.get("INFERENCE_BASE_URL", "http://localhost:8000/v1")
 

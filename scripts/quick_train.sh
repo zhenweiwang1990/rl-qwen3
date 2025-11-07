@@ -25,7 +25,7 @@ set +a
 
 # Override with minimal test configuration
 export RUN_ID="${RUN_ID:-quick-test}"
-export MODEL_NAME="${MODEL_NAME:-Qwen/Qwen3-14B-Instruct}"
+export MODEL_NAME="${MODEL_NAME:-OpenPipe/Qwen3-14B-Instruct-Instruct}"
 export VERBOSE="true"
 
 # Minimal training config for quick iteration

@@ -9,7 +9,7 @@ echo "================================================"
 echo ""
 
 # Quick training configuration (small scale)
-export MODEL_NAME="Qwen/Qwen3-14B"
+export MODEL_NAME="OpenPipe/Qwen3-14B-Instruct"
 export OUTPUT_DIR="./output_sb3_test"
 export NUM_EPISODES="100"  # Small number for testing
 export BATCH_SIZE="2"

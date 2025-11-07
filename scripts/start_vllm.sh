@@ -3,9 +3,9 @@ set -e
 
 # Start vLLM server for Qwen3 14B model
 # Usage: ./scripts/start_vllm.sh [model_name] [port]
-# Reference: https://huggingface.co/Qwen/Qwen3-14B
+# Reference: https://huggingface.co/OpenPipe/Qwen3-14B-Instruct
 
-MODEL_NAME="${1:-Qwen/Qwen3-14B}"
+MODEL_NAME="${1:-OpenPipe/Qwen3-14B-Instruct}"
 PORT="${2:-8000}"
 
 echo "=========================================="
