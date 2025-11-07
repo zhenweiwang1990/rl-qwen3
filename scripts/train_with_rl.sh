@@ -138,6 +138,9 @@ echo -e "\n${BLUE}================================================${NC}"
 echo -e "${BLUE}  Starting RL Training Loop${NC}"
 echo -e "${BLUE}================================================${NC}\n"
 
+# Enable verbose mode to see detailed rollout information
+export VERBOSE=true
+
 uv run python -m qwen3_agent.train
 
 EXIT_CODE=$?

@@ -9,7 +9,12 @@ import os
 from qwen3_agent.data.types import Email
 
 # Database path - can be overridden by environment variable
-DEFAULT_DB_PATH = os.environ.get("EMAIL_DB_PATH", "enron_emails.db")
+# Use absolute path to ensure it works regardless of working directory
+BASE_DIR = os.path.dirname(os.path.abspath(__file__))
+DEFAULT_DB_PATH = os.environ.get(
+    "EMAIL_DB_PATH", 
+    os.path.join(BASE_DIR, "..", "enron_emails.db")
+)
 
 logging.basicConfig(
     level=logging.INFO, format="%(asctime)s - %(levelname)s - %(message)s"
