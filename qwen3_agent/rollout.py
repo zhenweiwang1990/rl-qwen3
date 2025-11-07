@@ -371,23 +371,35 @@ async def rollout(
             )
             if tool_call is None:
                 rubric.bad_tool_call_args = True
+                traj.logs.append(f"Turn {rubric.num_turns}: No tool call found in model response")
+                if model.config.verbose:
+                    print(f"ERROR: No tool call found. Response: {choice.message.content}")
                 break
             tool_name = tool_call["name"]
             try:
                 tool_args = json.loads(tool_call["arguments"])
                 assert isinstance(tool_args, dict)
-            except Exception:
+            except Exception as e:
                 rubric.bad_tool_call_args = True
+                traj.logs.append(f"Turn {rubric.num_turns}: Failed to parse tool arguments: {e}")
+                if model.config.verbose:
+                    print(f"ERROR: Failed to parse tool arguments: {e}")
                 break
         else:
             raw_content = choice.message.content
             if raw_content is None:
                 rubric.cant_parse_tool_call = True
+                traj.logs.append(f"Turn {rubric.num_turns}: No content in model response")
+                if model.config.verbose:
+                    print(f"ERROR: No content in model response")
                 break
             start_index = raw_content.find("{")
             end_index = raw_content.rfind("}")
             if not (start_index != -1 and end_index != -1 and start_index < end_index):
                 rubric.cant_parse_tool_call = True
+                traj.logs.append(f"Turn {rubric.num_turns}: No valid JSON found in response: {raw_content[:200]}")
+                if model.config.verbose:
+                    print(f"ERROR: No valid JSON found in response: {raw_content[:200]}")
                 break
             json_str = raw_content[start_index : end_index + 1]
 
@@ -400,7 +412,9 @@ async def rollout(
 
             if "tool_args" not in tool_call:
                 rubric.bad_tool_call_args = True
-                traj.logs.append(f"Tool call missing tool_args: {tool_call}")
+                traj.logs.append(f"Turn {rubric.num_turns}: Tool call missing tool_args: {tool_call}")
+                if model.config.verbose:
+                    print(f"ERROR: Tool call missing tool_args: {tool_call}")
                 break
             tool_name = tool_call.get("tool_name")
             tool_args = tool_call.get("tool_args")
@@ -431,12 +445,20 @@ async def rollout(
                         print(f"Found {len(search_results)} emails")
                 except Exception as e:
                     rubric.bad_tool_call_args = True
-                    traj.logs.append(f"Error searching emails: {e}")
+                    error_msg = f"Error searching emails: {e}"
+                    traj.logs.append(error_msg)
+                    if model.config.verbose:
+                        print(f"ERROR: {error_msg}")
+                        import traceback
+                        traceback.print_exc()
                     break
             case "read_email":
                 message_id_to_read = tool_args.get("message_id")
                 if not isinstance(message_id_to_read, str):
                     rubric.bad_tool_call_args = True
+                    traj.logs.append(f"Turn {rubric.num_turns}: Invalid message_id type: {type(message_id_to_read)}")
+                    if model.config.verbose:
+                        print(f"ERROR: Invalid message_id type: {type(message_id_to_read)}")
                     break
                 if message_id_to_read == scenario.message_ids[0]:
                     rubric.ever_read_right_email = True
@@ -462,6 +484,9 @@ async def rollout(
                     or not isinstance(final_sources, list)
                 ):
                     rubric.bad_tool_call_args = True
+                    traj.logs.append(f"Turn {rubric.num_turns}: Invalid return_final_answer args - answer: {type(final_answer)}, sources: {type(final_sources)}")
+                    if model.config.verbose:
+                        print(f"ERROR: Invalid return_final_answer args - answer: {type(final_answer)}, sources: {type(final_sources)}")
                     break
 
                 rubric.num_sources = len(final_sources)
@@ -487,6 +512,9 @@ async def rollout(
                 break
             case _:
                 rubric.bad_tool_call_name = True
+                traj.logs.append(f"Turn {rubric.num_turns}: Unknown tool name: {tool_name}")
+                if model.config.verbose:
+                    print(f"ERROR: Unknown tool name: {tool_name}")
                 break
 
     # Calculate final reward and metrics
