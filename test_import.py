@@ -41,11 +41,23 @@ def test_imports():
         print(f"  ✗ qwen3_agent.tools failed: {e}")
     
     try:
-        print("  ✓ Importing qwen3_agent.rollout...")
-        from qwen3_agent.rollout import rollout, EvaluationRubric
+        print("  ✓ Importing qwen3_agent.core.framework...")
+        from qwen3_agent.core.framework import (
+            BaseAgent, BaseTask, BaseEvaluator, 
+            LLMInference, generic_rollout
+        )
     except Exception as e:
-        errors.append(f"qwen3_agent.rollout: {e}")
-        print(f"  ✗ qwen3_agent.rollout failed: {e}")
+        errors.append(f"qwen3_agent.core.framework: {e}")
+        print(f"  ✗ qwen3_agent.core.framework failed: {e}")
+    
+    try:
+        print("  ✓ Importing qwen3_agent.agents.email_agent...")
+        from qwen3_agent.agents.email_agent import (
+            EmailAgent, EmailTask, EmailEvaluator
+        )
+    except Exception as e:
+        errors.append(f"qwen3_agent.agents.email_agent: {e}")
+        print(f"  ✗ qwen3_agent.agents.email_agent failed: {e}")
     
     try:
         print("  ✓ Importing qwen3_agent.benchmark...")

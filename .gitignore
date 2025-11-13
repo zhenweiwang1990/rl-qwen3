@@ -273,3 +273,4 @@ training_outputs/
 node_modules/
 package-lock.json
 
+benchmark_results/

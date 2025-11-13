@@ -2,6 +2,8 @@
 
 This script uses the OpenPipe ART library for complete reinforcement learning training,
 including gradient updates, checkpoint management, and model optimization.
+
+Now fully refactored to use the generic agent training framework.
 """
 
 import art
@@ -11,7 +13,8 @@ from dotenv import load_dotenv
 from typing import List
 import os
 
-from qwen3_agent.rollout import rollout
+from qwen3_agent.core.framework import LLMInference, generic_rollout
+from qwen3_agent.agents.email_agent import EmailAgent, EmailTask, EmailEvaluator
 from qwen3_agent.data import load_synthetic_queries
 from qwen3_agent.data.types import SyntheticQuery
 from qwen3_agent.data.local_email_db import generate_database
@@ -176,11 +179,28 @@ async def run_training(model: art.TrainableModel, verbose: bool = False):
         if verbose or model.config.verbose:
             print(f"\nGenerating {len(batch)} trajectory groups...")
         
+        # Create agent and evaluator once for all scenarios
+        evaluator = EmailEvaluator(
+            simple_reward=model.config.stupid_simple_reward_fn,
+            verbose=verbose or model.config.verbose,
+            max_turns=model.config.max_turns,
+        )
+        agent = EmailAgent(evaluator=evaluator)
+        llm = LLMInference(model)
+        
         groups = await art.gather_trajectory_groups(
             (
                 art.TrajectoryGroup(
                     (
-                        rollout(model, scenario)
+                        generic_rollout(
+                            llm=llm,
+                            task=EmailTask.from_synthetic_query(scenario),
+                            agent=agent,
+                            evaluator=evaluator,
+                            max_turns=model.config.max_turns,
+                            use_native_tools=model.config.use_tools,
+                            verbose=verbose or model.config.verbose,
+                        )
                         for _ in range(training_config.trajectories_per_group)
                     )
                 )

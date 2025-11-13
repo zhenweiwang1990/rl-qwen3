@@ -38,7 +38,8 @@ import art
 from dotenv import load_dotenv
 import sys
 from qwen3_agent.config import PolicyConfig
-from qwen3_agent.rollout import rollout
+from qwen3_agent.core.framework import LLMInference, generic_rollout
+from qwen3_agent.agents.email_agent import EmailAgent, EmailTask, EmailEvaluator
 from qwen3_agent.data import load_synthetic_queries
 import yaml
 from tabulate import tabulate
@@ -99,8 +100,27 @@ async def main():
             ),
         )
     
+    # Create agent and evaluator
+    config = model.config
+    evaluator = EmailEvaluator(
+        simple_reward=config.stupid_simple_reward_fn,
+        verbose=True,
+        max_turns=config.max_turns,
+    )
+    agent = EmailAgent(evaluator=evaluator)
+    llm = LLMInference(model)
+    
     # Run rollout
-    traj = await rollout(model, scenario)
+    task = EmailTask.from_synthetic_query(scenario)
+    traj = await generic_rollout(
+        llm=llm,
+        task=task,
+        agent=agent,
+        evaluator=evaluator,
+        max_turns=config.max_turns,
+        use_native_tools=config.use_tools,
+        verbose=True,
+    )
     
     # Prepare summary table
     print("\n" + "="*80)

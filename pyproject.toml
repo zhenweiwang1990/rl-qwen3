@@ -28,6 +28,10 @@ dependencies = [
     "torchtune",
     "torchao",
     
+    # RL Training (SB3)
+    "gymnasium>=0.29.0",
+    "stable-baselines3>=2.0.0",
+    
     # GPU-specific (Linux only) - using platform markers
     # These will be automatically skipped on macOS
     "vllm; sys_platform == 'linux'",
