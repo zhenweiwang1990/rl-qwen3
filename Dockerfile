@@ -36,7 +36,8 @@ RUN uv sync --frozen
 
 # Set environment variables
 ENV PYTHONUNBUFFERED=1
-ENV CUDA_VISIBLE_DEVICES=0
+# Note: CUDA_VISIBLE_DEVICES is NOT set here to allow runtime detection
+# Set it at runtime if needed: docker run -e CUDA_VISIBLE_DEVICES=0 ...
 
 # Create directories for data and models
 RUN mkdir -p /workspace/data /workspace/models /workspace/logs

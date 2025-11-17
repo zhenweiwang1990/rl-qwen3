@@ -10,7 +10,7 @@ services:
     runtime: nvidia
     environment:
       - NVIDIA_VISIBLE_DEVICES=all
-      - CUDA_VISIBLE_DEVICES=0
+      # CUDA_VISIBLE_DEVICES removed - let PyTorch auto-detect
     env_file:
       - .env
     volumes:
@@ -61,7 +61,7 @@ services:
     runtime: nvidia
     environment:
       - NVIDIA_VISIBLE_DEVICES=all
-      - CUDA_VISIBLE_DEVICES=0
+      # CUDA_VISIBLE_DEVICES removed - let PyTorch auto-detect
       - VERBOSE=true
     env_file:
       - .env

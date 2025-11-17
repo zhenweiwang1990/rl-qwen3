@@ -4,12 +4,23 @@ This script uses the OpenPipe ART library for complete reinforcement learning tr
 including gradient updates, checkpoint management, and model optimization.
 """
 
+# CRITICAL: Set environment before any CUDA imports to prevent initialization errors in subprocesses
+# This must be done BEFORE importing torch, transformers, or any library that uses CUDA
+import os
+
+# Prevent early CUDA initialization
+os.environ['CUDA_MODULE_LOADING'] = 'LAZY'
+os.environ['PYTORCH_CUDA_ALLOC_CONF'] = 'max_split_size_mb:512'
+os.environ['TRANSFORMERS_NO_ADVISORY_WARNINGS'] = '1'
+
+# Disable triton which causes CUDA init in torchao
+os.environ['TRITON_LIBCUDA_PATH'] = '/dev/null'
+
 import art
 from art.local.backend import LocalBackend
 import asyncio
 from dotenv import load_dotenv
 from typing import List
-import os
 
 from qwen3_agent.rollout import rollout
 from qwen3_agent.data import load_synthetic_queries
